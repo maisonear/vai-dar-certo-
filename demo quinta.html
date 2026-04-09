@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solo Leveling RPG - O Sistema</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+
+        <!-- Save/Load Selection Screen -->
+        <div id="save-selection-screen" class="overlay hidden ns-redesign">
+            <div class="ns-bg-effects">
+                <div class="ns-fog"></div>
+                <div class="ns-particles"></div>
+            </div>
+            <div class="ns-content">
+                <div class="ns-header">
+                    <h1 class="ns-title">SISTEMA<br><span>ATIVADO</span></h1>
+                </div>
+                <div class="ns-prompt">DADOS DE SALVAMENTO DETECTADOS.</div>
+
+                <div class="save-actions"
+                    style="margin-top: 30px; display: flex; flex-direction: column; gap: 15px; align-items: center;">
+                    <button id="load-game-btn" class="ns-confirm-btn" style="width: 250px;">CONTINUAR</button>
+                    <button id="new-game-btn" class="ns-confirm-btn"
+                        style="width: 250px; background: rgba(220, 38, 38, 0.2); border-color: rgba(220, 38, 38, 0.5);">NOVO
+                        JOGO</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Name Selection Screen -->
+        <div id="name-selection-screen" class="overlay hidden ns-redesign">
+            <!-- Animated Background Aura and Particles -->
+            <div class="ns-bg-effects">
+                <div class="ns-fog"></div>
+                <div class="ns-particles"></div>
+            </div>
+
+            <div class="ns-content">
+                <!-- Title & Swords -->
+                <div class="ns-header">
+                    <div class="ns-swords">⚔️</div>
+                    <h1 class="ns-title">VEIL OF<br><span>DARKNESS</span></h1>
+                </div>
+
+                <!-- Silhouette & Aura -->
+                <div class="ns-character-box">
+                    <div class="ns-glow"></div>
+                    <div class="ns-silhouette"></div>
+                </div>
+
+                <div class="ns-prompt">DIGITE SEU NOME, CAÇADOR...</div>
+
+                <!-- Input area -->
+                <div class="ns-input-wrapper">
+                    <input type="text" id="player-name-input" maxlength="15" placeholder="Digite seu nome, caçador..."
+                        autocomplete="off" />
+                </div>
+                <!-- Error msg -->
+                <div id="name-error" class="ns-error-msg" style="display:none;"></div>
+
+                <!-- Confirm button -->
+                <button id="name-confirm-btn" class="ns-confirm-btn">CONFIRMAR</button>
+            </div>
+        </div>
+
+        <!-- Cutscene Container -->
+        <div id="cutscene-container">
+            <div id="cutscene-content">
+                <div id="cutscene-text"></div>
+                <div id="cutscene-controls">
+                    <button id="cutscene-continue">Continue</button>
+                    <button id="cutscene-skip">Pular Cutscene</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- UI Overlay -->
+        <div id="ui-overlay">
+            <!-- Top Bar -->
+            <div id="top-bar">
+                <div class="player-info">
+                    <div class="player-name" id="player-name-display">Caçador</div>
+                    <div class="player-level">Nível <span id="player-level">1</span></div>
+                    <div class="player-class" id="player-class-display" style="display:none;"></div>
+                    <div class="player-currency">💎 <span id="player-currency">0</span></div>
+                </div>
+                <div class="bars-container">
+                    <div class="bar-wrapper">
+                        <div class="bar-label">HP</div>
+                        <div class="bar hp-bar">
+                            <div class="bar-fill" id="hp-fill"></div>
+                            <div class="bar-text"><span id="hp-text">100/100</span></div>
+                        </div>
+                    </div>
+                    <div class="bar-wrapper">
+                        <div class="bar-label">MP</div>
+                        <div class="bar mp-bar">
+                            <div class="bar-fill" id="mp-fill"></div>
+                            <div class="bar-text"><span id="mp-text">50/50</span></div>
+                        </div>
+                    </div>
+                    <div class="bar-wrapper">
+                        <div class="bar-label">XP</div>
+                        <div class="bar xp-bar">
+                            <div class="bar-fill" id="xp-fill"></div>
+                            <div class="bar-text"><span id="xp-text">0/100</span></div>
+                        </div>
+                    </div>
+                    <div class="bar-wrapper" id="dash-bar-wrapper">
+                        <div class="bar-label">DASH</div>
+                        <div class="bar dash-bar">
+                            <div class="bar-fill" id="dash-fill"></div>
+                            <div class="bar-text">PRONTO (1)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Panel -->
+            <div id="stats-panel" class="panel hidden">
+                <div class="panel-header">
+                    <h2>Atributos</h2>
+                    <button class="close-btn" onclick="game.ui.toggleStatsPanel()">×</button>
+                </div>
+                <div class="panel-content">
+                    <div class="stat-points">
+                        Pontos Disponíveis: <span id="available-points">0</span>
+                    </div>
+                    <div class="stats-list" id="stats-list">
+                        <!-- Stats will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Inventory Panel -->
+            <div id="inventory-panel" class="panel hidden">
+                <div class="panel-header">
+                    <h2>Inventário</h2>
+                    <button class="close-btn" onclick="game.ui.toggleInventory()">×</button>
+                </div>
+                <div class="panel-content" style="display:flex; gap:12px;">
+                    <div style="flex:1;">
+                        <div class="equipment-section">
+                            <h3>Equipamentos</h3>
+                            <div class="equipment-slots" id="equipment-slots">
+                                <!-- Equipment slots will be populated by JavaScript -->
+                            </div>
+                        </div>
+                        <div class="inventory-section">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <h3>Itens</h3>
+                                <button id="discard-mode-btn" class="discard-btn" onclick="game.ui.toggleDiscardMode()">
+                                    🗑️ Descartar
+                                </button>
+                            </div>
+                            <div class="inventory-grid" id="inventory-grid">
+                                <!-- Inventory items will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Item Detail Panel -->
+                    <div id="item-detail-panel" class="item-detail-panel hidden">
+                        <div class="item-detail-header">
+                            <button class="close-btn" onclick="game.ui.hideItemDetails()">×</button>
+                        </div>
+                        <div id="item-detail-content">
+                            <!-- Populated by JS -->
+                        </div>
+                        <div id="item-detail-actions"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stage Select Panel -->
+            <div id="stage-panel" class="panel hidden">
+                <div class="panel-header">
+                    <h2>Selecionar Dungeon</h2>
+                    <button class="close-btn" id="close-stage-panel">×</button>
+                </div>
+                <div class="panel-content">
+                    <div class="stages-list" id="stages-list">
+                        <!-- Stages will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Skills Panel -->
+            <div id="skills-panel" class="panel hidden">
+                <div class="panel-header">
+                    <h2>Habilidades</h2>
+                    <button class="close-btn" onclick="game.ui.toggleSkillsPanel()">×</button>
+                </div>
+                <div class="panel-content">
+                    <div class="skill-points">
+                        Pontos de Habilidade: <span id="skill-points">0</span>
+                    </div>
+                    <div class="skills-list" id="skills-list">
+                        <!-- Skills will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shop Panel -->
+            <div id="shop-panel" class="panel hidden">
+                <div class="panel-header">
+                    <h2>🛒 Loja do Comerciante</h2>
+                    <button class="close-btn" onclick="game.ui.toggleShop()">×</button>
+                </div>
+                <div class="panel-content">
+                    <div class="shop-header">
+                        <div class="shop-info-row">
+                            <div>Seus Cristais: <strong><span id="shop-currency">0</span> 💎</strong></div>
+                            <div class="shop-timer-container">⏱️ Próxima atualização: <span id="shop-timer">5:00</span>
+                            </div>
+                        </div>
+                        <div class="shop-controls-row">
+                            <div class="shop-tabs">
+                                <button class="shop-tab active" onclick="game.ui.showShopTab('buy')">🛒 Comprar</button>
+                                <button class="shop-tab" onclick="game.ui.showShopTab('sell')">💰 Vender</button>
+                            </div>
+                            <button class="shop-refresh-btn" onclick="game.ui.refreshShop()">🔄 Atualizar
+                                (50💎)</button>
+                        </div>
+                    </div>
+                    <div class="shop-body">
+                        <div class="shop-items" id="shop-items">
+                            <!-- Shop items populated by JavaScript -->
+                        </div>
+                        <div class="shop-sell-items hidden" id="shop-sell-items">
+                            <!-- Sell items populated by JavaScript -->
+                        </div>
+                        <div id="shop-item-preview" class="shop-item-preview hidden">
+                            <!-- Item preview populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Class Selection Modal -->
+            <div id="class-selection-panel" class="overlay hidden">
+                <div class="class-selection-content">
+                    <h1>⚔️ ESCOLHA SUA CLASSE ⚔️</h1>
+                    <p id="class-selection-description">Você alcançou o nível 15! Escolha sua especialização baseada nos
+                        seus atributos.</p>
+                    <div id="class-section-normal">
+                        <h2 class="class-section-title">📋 Classes Disponíveis</h2>
+                        <div class="class-grid" id="class-grid">
+                            <!-- Normal classes populated by JavaScript -->
+                        </div>
+                    </div>
+                    <div id="class-section-rare" class="hidden">
+                        <h2 class="class-section-title rare-title">🌟 Classes Raras Especiais 🌟</h2>
+                        <div class="class-grid" id="class-grid-rare">
+                            <!-- Rare classes populated by JavaScript -->
+                        </div>
+                    </div>
+                    <button class="big-btn class-dismiss-btn" onclick="game.ui.dismissClassSelection()">⏳ Escolher
+                        Depois</button>
+                </div>
+            </div>
+
+            <!-- Game Over Screen -->
+            <div id="game-over-screen" class="overlay hidden">
+                <div class="game-over-content">
+                    <h1>GAME OVER</h1>
+                    <p>Você foi derrotado...</p>
+                    <div>Nível alcançado: <span id="final-level">1</span></div>
+                    <div>XP total: <span id="final-xp">0</span></div>
+                    <button class="big-btn" onclick="game.restart()">Reiniciar</button>
+                </div>
+            </div>
+
+            <!-- Pause Menu -->
+            <div id="pause-menu" class="overlay hidden">
+                <div class="pause-content">
+                    <h1>PAUSADO</h1>
+                    <button class="big-btn" onclick="game.resume()">Continuar</button>
+                    <button class="big-btn" onclick="game.saveSystem.saveGame()">Salvar Jogo</button>
+                    <button class="big-btn" onclick="game.returnToTitle()">Sair para Título</button>
+                </div>
+            </div>
+
+            <!-- Hotbar -->
+            <div id="hotbar" class="vertical-hotbar">
+                <!-- Skills will be dynamically populated here -->
+            </div>
+
+            <!-- Bottom Controls -->
+            <div id="bottom-controls">
+                <button class="control-btn" onclick="game.ui.toggleStatsPanel()">📊 Stats (C)</button>
+                <button class="control-btn" onclick="game.ui.toggleInventory()">🎒 Inventário (I)</button>
+                <button class="control-btn" id="btn-stage">🏰 Dungeons (G)</button>
+                <button class="control-btn" onclick="game.ui.toggleSkillsPanel()">⚔️ Habilidades (B)</button>
+                <button class="control-btn" onclick="game.ui.toggleShop()">🛒 Loja (Tab)</button>
+            </div>
+
+            <!-- Damage Numbers Container -->
+            <div id="damage-numbers"></div>
+
+            <!-- Notifications -->
+            <div id="notifications"></div>
+        </div>
+
+        <!-- DEMO: Tela de Conclusão -->
+        <div id="demo-complete-screen" class="overlay hidden" style="display:none;">
+            <div class="demo-complete-content">
+                <div class="demo-complete-glow"></div>
+                <div class="demo-complete-icon">⚔️</div>
+                <h1 class="demo-complete-title">DEMO COMPLETA</h1>
+                <div class="demo-complete-line"></div>
+                <p class="demo-complete-subtitle">A Entidade foi derrotada.<br>Seu irmão está livre.</p>
+                <p class="demo-complete-thanks">Obrigado por jogar a Demonstração!</p>
+                <p class="demo-complete-continue">A jornada completa continua em breve...</p>
+                <button class="demo-complete-btn" onclick="location.reload()">🔄 Jogar Novamente</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load all game scripts -->
+    <script src="cutscene.js"></script>
+    <script src="effects.js"></script>
+    <script src="skills.js"></script>
+    <script src="sprites.js"></script>
+    <script src="camera.js"></script>
+    <script src="world.js"></script>
+    <script src="items.js"></script>
+    <script src="classes.js"></script>
+    <script src="player.js"></script>
+    <script src="enemy.js"></script>
+    <script src="combat.js"></script>
+    <script src="inventory.js"></script>
+    <script src="loot.js"></script>
+    <script src="stages.js"></script>
+    <script src="economy.js"></script>
+    <script src="ui.js"></script>
+    <script src="renderer.js"></script>
+    <script src="save_system.js"></script>
+    <script src="game.js"></script>
+</body>
+
+</html>
